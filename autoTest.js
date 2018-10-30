@@ -105,16 +105,15 @@ async function main(){
             await timeout(100);
             return true;
         }catch(e){
-            console.log('['+e.name+']['+name+'] - '+e.message);
+            var url = await driver.getCurrentUrl();
+            console.log('['+e.name+']['+name+'] - '+e.message + ' || ' + url);
+            errorList.push('['+e.name+']['+name+'] - '+e.message + ' || ' + url);
             // 로딩화면 제거
             try{
-                /*await driver.executeScript("return document.getElementById('theModal').style.display = 'none';");
-                await driver.executeScript("return document.getElementsByClassName('modal-backdrop')[0].remove();");*/
                 await driver.executeScript("return $('#theModal').modal('hide');");
             }catch (e){
 
             }
-            errorList.push('['+e.name+']['+name+'] - '+e.message);
             await timeout(1000);
             return true;
         }
@@ -148,11 +147,14 @@ async function main(){
 
     function mail(errorLsit){
         var transporter = nodemailer.createTransport('smtps://zvtest0009%40gmail.com:zester1309@smtp.gmail.com');
-        var message = getDate() + '<br>';
-        errorLsit.forEach(function(d){
-            message += d + '<br>';
-        });
-
+        var message = 'Test Date: '+ getDate() + '<br>';
+        if(errorLsit.length){
+            errorLsit.forEach(function(d){
+                message += d + '<br>';
+            });
+        }else{
+            message += 'Errror가 없습니다.';
+        }
 
         var mailOptions = {
             from: 'ZESTER <zester@zvolti.com>', // sender address
