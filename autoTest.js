@@ -96,18 +96,20 @@ async function main(){
         await timeout(500);
         try{
             await driver.wait(webdriver.until.elementLocated(webdriver.By.id(list))).click();
-            await driver.wait(checkBackDrop, 3000);
+            await driver.wait(checkBackDrop, 10000);
             await timeout(100);
             if(tab){
                 driver.wait(webdriver.until.elementLocated(webdriver.By.xpath(tab))).click();
             }
-            await driver.wait(checkBackDrop, 3000);
+            await driver.wait(checkBackDrop, 10000);
             await timeout(100);
             return true;
         }catch(e){
             var url = await driver.getCurrentUrl();
-            console.log('['+e.name+']['+name+'] - '+e.message + ' || ' + url);
-            errorList.push('['+e.name+']['+name+'] - '+e.message + ' || ' + url);
+            if(e.name === 'TimeoutError'){
+                console.log('['+e.name+']['+name+'] - '+e.message + ' || ' + url);
+                errorList.push('['+e.name+']['+name+'] - '+e.message + ' || ' + url);
+            }
             // 로딩화면 제거
             try{
                 await driver.executeScript("return $('#theModal').modal('hide');");
