@@ -157,7 +157,7 @@ async function main(){
         var mailOptions = {
             from: 'ZESTER <zester@zvolti.com>', // sender address
             to: 'djoh@zvolti.com', // list of receivers
-            //cc: 'djoh@zvolti.com',
+            cc: 'hyyoon@zvolti.com',
             subject: 'ZESTER WEB 자동 로딩 테스트 결과.', // Subject line
             html: message
         };
