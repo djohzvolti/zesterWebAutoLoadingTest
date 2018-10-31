@@ -10,6 +10,8 @@ var timeout = function(ms){
 
 async function main(){
     var errorList = [];
+    var loadTime = 10000;
+    var testStarted = getDate();
     var driver = new webdriver.Builder().forBrowser('chrome').build();
 
     // 로그인
@@ -94,22 +96,37 @@ async function main(){
     // 작업 함수
     async function checkMenu(list, tab, name){
         await timeout(500);
+        var url = await driver.getCurrentUrl();
+        var startTime = new Date().getTime();
         try{
             await driver.wait(webdriver.until.elementLocated(webdriver.By.id(list))).click();
-            await driver.wait(checkBackDrop, 10000);
-            await timeout(100);
+            await driver.wait(checkBackDrop, loadTime);
+            await timeout(500);
             if(tab){
                 driver.wait(webdriver.until.elementLocated(webdriver.By.xpath(tab))).click();
             }
-            await driver.wait(checkBackDrop, 10000);
-            await timeout(100);
+            var r = {
+                type: 'Success',
+                latency: new Date().getTime() - startTime - 500,
+                url: url,
+                name: name,
+                message: 'Success'
+            }
+            errorList.push(r);
+            await driver.wait(checkBackDrop, loadTime);
+            await timeout(500);
+
             return true;
         }catch(e){
-            var url = await driver.getCurrentUrl();
-            if(e.name === 'TimeoutError'){
-                console.log('['+e.name+']['+name+'] - '+e.message + ' || ' + url);
-                errorList.push('['+e.name+']['+name+'] - '+e.message + ' || ' + url);
+            var r = {
+                type: (e.name === 'T' ? 'TimeoutError' : (e.name === 'n' ? 'WebDriverError' : '')),
+                latency: (new Date().getTime() - startTime) + (e.name === 'TimeoutError' ? '+' : ''),
+                url: url,
+                name: name,
+                message:  e.message
             }
+            console.log(r);
+            errorList.push(r);
             // 로딩화면 제거
             try{
                 await driver.executeScript("return $('#theModal').modal('hide');");
@@ -149,14 +166,29 @@ async function main(){
 
     function mail(errorLsit){
         var transporter = nodemailer.createTransport('smtps://zvtest0009%40gmail.com:zester1309@smtp.gmail.com');
-        var message = 'Test Date: '+ getDate() + '<br>';
-        if(errorLsit.length){
+        var message = 'Test Date: '+ testStarted + ' ~ ' + getDate() + '<br>' +
+            '<table>' +
+            '<tr style="text-align: center;"><td>Name</td><td>URL</td><td>Result</td><td>Latency (msec)</td></tr>';
+        errorLsit.forEach(function(d){
+            if(d.type === 'TimeoutError'){
+                message += '<tr style="background: red">';
+            }else if(d.type === 'WebDriverError'){
+                message += '<tr style="background: yellow;">';
+            }else{
+                message += '<tr>';
+            }
+           message += '<td>'+d.name+'</td><td>'+d.url+'</td><td>'+d.type+'</td><td style="text-align: right;">'+d.latency+'</td></tr>';
+        });
+        message += '</table>';
+
+        console.log(message);
+        /*if(errorLsit.length){
             errorLsit.forEach(function(d){
                 message += d + '<br>';
             });
         }else{
             message += 'Errror가 없습니다.';
-        }
+        }*/
 
         var mailOptions = {
             from: 'ZESTER <zester@zvolti.com>', // sender address
@@ -183,9 +215,10 @@ async function main(){
     }
 
 }
+
 main();
-
-
-
+var interval = setInterval(function(){
+    main();
+}, 3600000);
 
 
