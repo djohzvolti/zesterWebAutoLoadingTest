@@ -10,7 +10,7 @@ var timeout = function(ms){
 
 async function main(){
     var errorList = [];
-    var loadTime = 10000;
+    var loadTime = 20000;
     var testStarted = getDate();
     var driver = new webdriver.Builder().forBrowser('chrome').build();
 
@@ -96,7 +96,6 @@ async function main(){
     // 작업 함수
     async function checkMenu(list, tab, name){
         await timeout(500);
-        var url = await driver.getCurrentUrl();
         var startTime = new Date().getTime();
         try{
             await driver.wait(webdriver.until.elementLocated(webdriver.By.id(list))).click();
@@ -105,6 +104,7 @@ async function main(){
             if(tab){
                 driver.wait(webdriver.until.elementLocated(webdriver.By.xpath(tab))).click();
             }
+            var url = await driver.getCurrentUrl();
             var r = {
                 type: 'Success',
                 latency: new Date().getTime() - startTime - 500,
@@ -118,9 +118,10 @@ async function main(){
 
             return true;
         }catch(e){
+            var url = await driver.getCurrentUrl();
             var r = {
                 type: (e.name === 'T' ? 'TimeoutError' : (e.name === 'n' ? 'WebDriverError' : '')),
-                latency: (new Date().getTime() - startTime) + (e.name === 'TimeoutError' ? '+' : ''),
+                latency: (new Date().getTime() - startTime) + (e.name === 'TimeoutError' || e.name === 'T'? '+' : ''),
                 url: url,
                 name: name,
                 message:  e.message
