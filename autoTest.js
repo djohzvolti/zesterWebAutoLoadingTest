@@ -67,9 +67,10 @@ async function main(){
     await checkMenu('list_3_2', null, 'ZESTER_MGT');
     await checkMenu('list_3_3', null, 'DUT SUPPLEMENTARY');
     await checkMenu('list_3_4', null, 'N/A TC List');
-    await checkMenu('list_3_5', null, 'APIOT Pass Criteria');
-    await checkMenu('list_3_6', null, 'Report Import');
-    await checkMenu('list_3_7', null, 'AP Info');
+    await checkMenu('list_3_5', null, 'RvA Black List');
+    await checkMenu('list_3_6', null, 'APIOT Pass Criteria');
+    await checkMenu('list_3_7', null, 'Report Import');
+    await checkMenu('list_3_8', null, 'AP Info');
 
     // TEST CASE
     await checkMenu('list_0_0', '/html/body/div[1]/div/app-root/div/div/app-contorller/div/div/div/div/ul/li[1]/a', 'BFLAB/RC - TEST');
@@ -120,14 +121,17 @@ async function main(){
         }catch(e){
             var url = await driver.getCurrentUrl();
             var r = {
-                type: (e.name === 'T' ? 'TimeoutError' : (e.name === 'n' ? 'WebDriverError' : '')),
+                type: (e.name === 'T' ? 'TimeoutError' : (e.name === 'n' ? 'WebDriverError' : e.name)),
                 latency: (new Date().getTime() - startTime) + (e.name === 'TimeoutError' || e.name === 'T'? '+' : ''),
                 url: url,
                 name: name,
                 message:  e.message
             }
-            console.log(r);
-            errorList.push(r);
+
+            if(r.type !== 'WebDriverError'){
+                console.log(r);
+                errorList.push(r);
+            }
             // 로딩화면 제거
             try{
                 await driver.executeScript("return $('#theModal').modal('hide');");
@@ -135,6 +139,10 @@ async function main(){
 
             }
             await timeout(1000);
+            if(r.type === 'WebDriverError'){
+                console.log('WebDriverError, 재호출');
+                await checkMenu(list, tab, name);
+            }
             return true;
         }
     }
@@ -194,7 +202,7 @@ async function main(){
         var mailOptions = {
             from: 'ZESTER <zester@zvolti.com>', // sender address
             to: 'djoh@zvolti.com', // list of receivers
-            cc: 'hyyoon@zvolti.com',
+            //cc: 'hyyoon@zvolti.com',
             subject: 'ZESTER WEB 자동 로딩 테스트 결과.', // Subject line
             html: message
         };
