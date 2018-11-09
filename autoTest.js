@@ -174,8 +174,19 @@ async function main(){
     }
 
     function mail(errorLsit){
+        // result
+        var successCnt = 0;
+        errorLsit.forEach(function(d, i){
+            if(d.type === 'Success'){
+                successCnt++;
+            }
+        });
+        var resultMessage = successCnt === errorLsit.length ? 'PASS ('+successCnt+'/'+successCnt+')' : 'FAIL ('+successCnt+'/'+errorLsit.length+')';
+
+
         var transporter = nodemailer.createTransport('smtps://zvtest0009%40gmail.com:zester1309@smtp.gmail.com');
         var message = 'Test Date: '+ testStarted + ' ~ ' + getDate() + '<br>' +
+            'Result: ' + resultMessage + '<br><br>' +
             '<table>' +
             '<tr style="text-align: center;"><td>Name</td><td>URL</td><td>Result</td><td>Latency (msec)</td></tr>';
         errorLsit.forEach(function(d){
@@ -203,7 +214,7 @@ async function main(){
             from: 'ZESTER <zester@zvolti.com>', // sender address
             to: 'djoh@zvolti.com', // list of receivers
             cc: 'hyyoon@zvolti.com',
-            subject: 'ZESTER WEB 자동 로딩 테스트 결과.', // Subject line
+            subject: 'ZESTER WEB 자동 로딩 테스트 결과 - ' + resultMessage, // Subject line
             html: message
         };
         transporter.sendMail(mailOptions, function(error, info){
